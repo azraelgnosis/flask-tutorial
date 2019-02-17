@@ -9,6 +9,9 @@ from flaskr.db import get_db
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
+# When the user visits the /auth/register URL, the register view will return HTML with a form for them to fill out.
+# When they submit the form, it will validate their input and either show the form again with an error message or
+# create the new user and go to the login page.
 @bp.route('/register', methods=('GET', 'POST'))
 def register():
     if register.method == 'POST':
@@ -38,6 +41,7 @@ def register():
 
     return render_template('auth/register.html')
 
+# This view follows the same pattern as the register view above.
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':
@@ -63,6 +67,7 @@ def login():
 
     return render_template('auth/login.html')
 
+# Now that the user’s id is stored in the session, it will be available on subsequent requests. At the beginning of each request, if a user is logged in their information should be loaded and made available to other views.
 @bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
@@ -73,3 +78,9 @@ def load_logged_in_user():
         g.user = get_db().execute(
             'SELECT * FROM user WHERE id = ?', (user_id,)
         ).fetchone()
+
+# To log out, you need to remove the user id from the session. Then load_logged_in_user won’t load a user on subsequent requests.
+@bp.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
