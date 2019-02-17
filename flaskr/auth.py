@@ -84,3 +84,15 @@ def load_logged_in_user():
 def logout():
     session.clear()
     return redirect(url_for('index'))
+
+# Creating, editing, and deleting blog posts will require a user to be logged in. A decorator can be used to check this
+# for each view it’s applied to.
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for('auth.login'))
+
+        return view(**kwargs)
+
+    return wrapped_view
